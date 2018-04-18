@@ -1,3 +1,4 @@
+// commands names
 module.exports = {
   CONNECT: 'connect',
   CONNECTED: 'connected',
