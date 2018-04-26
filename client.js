@@ -33,6 +33,7 @@ const main = async () => {
     'localhost',
     err => {}
   );
+
 };
 
 //setup player and send message
@@ -40,13 +41,13 @@ main();
 
 //receive commands from server
 client.on('message', (msg, rinfo) => {
-  console.log(msg.toString());
   let command = msg.toString().split(' ');
 
   switch (command[0]) {
     //game started
     case Commands.START:
       game = new Game(parseInt(command[1]));
+
 
       //get player names
       for (let x = 2; x < command.length; x++) {
@@ -55,13 +56,12 @@ client.on('message', (msg, rinfo) => {
       //add players to game
       game.addPlayers(players);
       //show board
-      console.log(game.toBoard());
       break;
 
     case Commands.YOURTURN:
       makeMove();
       break;
-    // if anyone (and you) made move
+      // if anyone (and you) made move
     case Commands.MOVE:
       turnResolve(command[1], command[2], command[3]);
       break;
@@ -73,7 +73,10 @@ function AiMove() {
   //starting input for player 2
   let x = 7,
     y = 0;
-  return { x, y };
+  return {
+    x,
+    y
+  };
 }
 
 async function makeMove() {
@@ -106,6 +109,7 @@ async function makeMove() {
     err => {}
   );
 }
+
 function turnResolve(name, x, y) {
   // add move to board
   game.add(name, parseInt(x), parseInt(y));

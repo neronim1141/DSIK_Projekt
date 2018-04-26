@@ -1,20 +1,53 @@
 class Game {
   constructor(size = 10) {
     this.size = size;
+    let x = -1;
+    let y = -1;
     this.map_ = new Array(size).fill('0').map(v => {
-      return new Array(size).fill('0').map(v => {
+      y++;
+
+      let mapX = new Array(size).fill('0').map(v => {
+        x++;
         return {
           playerName: null,
-          points: 0
+          points: 0,
+          x: x,
+          y: y
         };
       });
+      x = -1;
+      return mapX;
     });
   }
   add(playerName, x, y) {
     //check if player can move
     if (this.canMove(playerName, x, y)) {
       //and add points
-      this.recursivePoints(x, y, playerName);
+      let queue = [];
+
+      queue.push(this.map_[y][x]);
+      while (queue.length) {
+        let item = queue.shift();
+
+        if (this.addPoint(playerName, item.x, item.y)) {
+          // test for left tile
+          if (item.y - 1 >= 0) {
+            queue.push(this.map_[item.y - 1][item.x]);
+          }
+          // test for down tile
+          if (item.x - 1 >= 0) {
+            queue.push(this.map_[item.y][item.x - 1]);
+          }
+          // test for right tile
+          if (item.y + 1 <= this.size - 1) {
+            queue.push(this.map_[item.y + 1][item.x]);
+          }
+          // test for up tile
+          if (item.x + 1 <= this.size - 1) {
+            queue.push(this.map_[item.y][item.x + 1]);
+          }
+        }
+      }
     }
   }
   //init players position in game
@@ -22,45 +55,50 @@ class Game {
     if (players.length >= 1)
       this.map_[0][0] = {
         playerName: players[0],
-        points: 3
+        points: 3,
+        x: 0,
+        y: 0
       };
     if (players.length >= 2)
       this.map_[0][this.size - 1] = {
         playerName: players[1],
-        points: 3
+        points: 3,
+        x: this.size - 1,
+        y: 0
       };
     if (players.length >= 3)
       this.map_[this.size - 1][0] = {
         playerName: players[2],
-        points: 3
+        points: 3,
+        x: 0,
+        y: this.size - 1
       };
     if (players.length >= 4)
       this.map_[this.size - 1][this.size - 1] = {
         playerName: players[3],
-        points: 3
+        points: 3,
+        x: this.size - 1,
+        y: this.size - 1
       };
   }
-  canMove(playerName, x, y) {
-    return this.map_[y][x].playerName === playerName;
-  }
-  //recursive add points on tiles
-  recursivePoints(x, y, playerName) {
+  addPoint(playerName, x, y) {
     this.map_[y][x].points++;
     this.map_[y][x].playerName = playerName;
-    if (this.map_[y][x].points === 4) {
-      this.map_[y][x].points = 1;
-      this.map_[y][x].playerName = playerName;
+    let explode = this.map_[y][x].points === 4;
+    if (explode) this.map_[y][x].points = 1;
+    return explode;
+  }
 
-      if (y - 1 >= 0) this.recursivePoints(x, y - 1, playerName);
-      if (x - 1 >= 0) this.recursivePoints(x - 1, y, playerName);
-      if (y + 1 <= this.size - 1) this.recursivePoints(x, y + 1, playerName);
-      if (x + 1 <= this.size - 1) this.recursivePoints(x + 1, y, playerName);
-    }
+  canMove(playerName, x, y) {
+    return this.map_[y][x].playerName === playerName;
   }
 
   //return mat2 of only points
   toBoard() {
     return this.map_.map(v => v.map(v => v.points));
+  }
+  toFullBoard() {
+    return this.map_;
   }
 }
 module.exports = Game;
