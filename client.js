@@ -40,14 +40,14 @@ const main = async () => {
 
   do {
     answer = await question("AI player y/n?");
-    if (!answer || answer != "y" || answer != "n") {
+    if (!answer || (answer != "y" && answer != "n")) {
       console.log("wrong");
     } else {
       if (answer === "y") {
         AI = true;
       }
     }
-  } while (!answer || answer != "y" || answer != "n");
+  } while (!answer || (answer != "y" && answer != "n"));
   //wait for Player name
 
   do {
