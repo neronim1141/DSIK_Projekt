@@ -21,7 +21,6 @@ const mainTest = async () => {
   AI = true;
   do {
     answer = await question("playerName:");
-
   } while (!answer);
   PlayerName = answer;
   client.send(
@@ -30,7 +29,7 @@ const mainTest = async () => {
     adresIP,
     err => {}
   );
-}
+};
 const main = async () => {
   let answer;
   answer = await question("Enter ip address");
@@ -41,20 +40,18 @@ const main = async () => {
 
   do {
     answer = await question("AI player y/n?");
-    if (!answer && answer != 'y' && answer != 'n') {
-      console.log("y/n:");
-
+    if (!answer || answer != "y" || answer != "n") {
+      console.log("wrong");
     } else {
       if (answer === "y") {
         AI = true;
       }
     }
-  } while (!answer && answer != 'y' && answer != 'n');
+  } while (!answer || answer != "y" || answer != "n");
   //wait for Player name
 
   do {
     answer = await question("playerName:");
-
   } while (!answer);
   PlayerName = answer;
 
@@ -68,7 +65,7 @@ const main = async () => {
 };
 
 //setup player and send message
-mainTest();
+main();
 
 //receive commands from server
 client.on("message", (msg, rinfo) => {
@@ -92,7 +89,7 @@ client.on("message", (msg, rinfo) => {
     case Commands.YOURTURN:
       makeMove();
       break;
-      // if anyone (and you) made move
+    // if anyone (and you) made move
     case Commands.MOVE:
       turnResolve(command[1], command[2], command[3]);
       break;
@@ -142,18 +139,22 @@ async function makeMove() {
     } while (!game.canMove(PlayerName, x, y));
   } else {
     let answer;
-
+    let move;
     do {
       //wait for player move
       answer = await question("yourmove x y?");
 
-      let move = answer.split(" ");
+      move = answer.split(" ");
+      if (!move[0] || !move[1]) {
+        console.log("Wrong coords");
+        continue;
+      }
       x = parseInt(move[0]);
       y = parseInt(move[1]);
-      if (!game.canMove(PlayerName, x, y))
-        console.log("Can't move");
+
+      if (!game.canMove(PlayerName, x, y)) console.log("Can't move");
       // while x and y are no good
-    } while (!game.canMove(PlayerName, x, y));
+    } while (!move[0] || !move[1] || !game.canMove(PlayerName, x, y));
   }
   //send move message
   client.send(
