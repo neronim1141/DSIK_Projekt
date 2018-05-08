@@ -93,7 +93,7 @@ class Game {
   }
 
   canMove(playerName, x, y) {
-    if (x < map_.length && y < map_.length)
+    if (x < this.map_.length && y < this.map_.length)
       return this.map_[y][x].playerName === playerName;
     else return false;
   }
