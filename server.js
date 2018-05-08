@@ -7,7 +7,9 @@ let maxPlayers = 4,
   gameSize = 8,
   players = [],
   turn = 0,
-  game;
+  game,
+  turnCount = 0;
+
 const rl = require("readline").createInterface({
   input: process.stdin,
   output: process.stdout
@@ -19,7 +21,7 @@ const main = async () => {
     answer = await question("max players?(2-4)?");
     if (!answer || parseInt(answer) < 2 || parseInt(answer) > 4) {
       console.log("Wrong max players type secodn time:");
-      continue;
+
     }
   } while (!answer || parseInt(answer) < 2 || parseInt(answer) > 4);
   //wait for Player name
@@ -62,8 +64,9 @@ server.on("message", (msg, rinfo) => {
     case "connect":
       connectPlayer(rinfo, command[1]);
       break;
-    //player made move
+      //player made move
     case Commands.MOVE:
+
       turnResolve(command[1], parseInt(command[2]), parseInt(command[3]));
       break;
   }
@@ -133,6 +136,7 @@ function turnResolve(name, x, y) {
   }
   // add move to board
   game.add(name, parseInt(x), parseInt(y));
+  turnCount++;
   //show board
   displayBoard();
   // send to player who have turn info about that
@@ -148,6 +152,7 @@ function removePlayer(i) {
   );
   players.splice(i, 1);
 }
+
 function sendTurn() {
   turn = turn >= players.length - 1 ? 0 : turn + 1;
 
@@ -184,6 +189,7 @@ function sendTurn() {
 }
 
 function displayBoard() {
+  console.log(turnCount);
   let yrows = "\x1b[47m\x1b[30m  ";
   for (let i = 0; i < game.map_.length; i++) yrows += i + " ";
   yrows += "\x1b[0m";
@@ -222,6 +228,7 @@ function displayBoard() {
   }
   console.log();
 }
+
 function question(question) {
   return new Promise((resolve, reject) => {
     rl.question(question, answer => {

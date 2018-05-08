@@ -14,7 +14,23 @@ let game,
   AI = false,
   PlayerName,
   players = [];
+const mainTest = async () => {
+  let answer;
+  adresIP = "77.55.215.182";
+  port = 41234;
+  AI = true;
+  do {
+    answer = await question("playerName:");
 
+  } while (!answer);
+  PlayerName = answer;
+  client.send(
+    Buffer.from(`${Commands.CONNECT} ${PlayerName}`),
+    port,
+    adresIP,
+    err => {}
+  );
+}
 const main = async () => {
   let answer;
   answer = await question("Enter ip address");
@@ -52,7 +68,7 @@ const main = async () => {
 };
 
 //setup player and send message
-main();
+mainTest();
 
 //receive commands from server
 client.on("message", (msg, rinfo) => {
@@ -143,7 +159,7 @@ async function makeMove() {
   client.send(
     Buffer.from(`${Commands.MOVE} ${PlayerName} ${x} ${y}`),
     port,
-    adresIP.toString(),
+    adresIP,
     err => {}
   );
 }
