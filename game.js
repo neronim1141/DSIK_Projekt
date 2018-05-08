@@ -84,8 +84,11 @@ class Game {
   addPoint(playerName, x, y) {
     this.map_[y][x].points++;
     this.map_[y][x].playerName = playerName;
-    let explode = this.map_[y][x].points === 4;
-    if (explode) this.map_[y][x].points = 1;
+    let explode = this.map_[y][x].points >= 4;
+    if (explode) {
+      this.map_[y][x].points = this.map_[y][x].points - 4;
+      if (this.map_[y][x].points == 0) this.map_[y][x].playerName = null;
+    }
     return explode;
   }
 
@@ -99,6 +102,18 @@ class Game {
   }
   toFullBoard() {
     return this.map_;
+  }
+
+  playersOnBoard() {
+    let players = [];
+    for (let y = 0; y < this.map_.length; y++) {
+      for (let x = 0; x < this.map_.length; x++) {
+        if (this.map_[y][x].playerName == null) continue;
+        if (players.indexOf(this.map_[y][x].playerName) < 0)
+          players.push(this.map_[y][x].playerName);
+      }
+    }
+    return players;
   }
 }
 module.exports = Game;

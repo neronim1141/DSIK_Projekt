@@ -2,10 +2,12 @@ const dgram = require('dgram');
 const server = dgram.createSocket('udp4');
 const Commands = require('./commands');
 const Player = require('./player');
-let maxPlayers = 2,
+const Game = require('./game');
+let maxPlayers = 4,
   gameSize = 8,
   players = [],
-  turn = 0;
+  turn = 0,
+  game;
 
 server.on('listening', () => {
   const address = server.address();
@@ -72,6 +74,13 @@ function connectPlayer(rinfo, name) {
           player.address,
           err => {}
         );
+        game = new Game(gameSize);
+        let tempPlayers = [];
+        for (let player of players) {
+          tempPlayers.push(player.name);
+        }
+        //add players to game
+        game.addPlayers(tempPlayers);
       }
       // send info for player who have turn
       sendTurn();
@@ -97,16 +106,92 @@ function turnResolve(name, x, y) {
       err => {}
     );
   }
-  turn = turn >= maxPlayers - 1 ? 0 : turn + 1;
+  // add move to board
+  game.add(name, parseInt(x), parseInt(y));
+  //show board
+  displayBoard();
   // send to player who have turn info about that
   sendTurn();
 }
 
-function sendTurn() {
+function removePlayer(i) {
   server.send(
-    Buffer.from(Commands.YOURTURN),
-    players[turn].port,
-    players[turn].address,
+    Buffer.from(Commands.DISCONNECTED),
+    players[i].port,
+    players[i].address,
     err => {}
   );
+  players.splice(i, 1);
+}
+function sendTurn() {
+  turn = turn >= players.length - 1 ? 0 : turn + 1;
+
+  let isOnBoard = game.playersOnBoard().indexOf(players[turn].name) >= 0;
+  let playersOnBoard = game.playersOnBoard().length;
+  if (playersOnBoard == 1 && isOnBoard) {
+    server.send(
+      Buffer.from(Commands.WIN),
+      players[turn].port,
+      players[turn].address,
+      err => {
+        server.close();
+      }
+    );
+    removePlayer(turn);
+  } else if (!isOnBoard) {
+    server.send(
+      Buffer.from(Commands.LOSE),
+      players[turn].port,
+      players[turn].address,
+      err => {}
+    );
+    removePlayer(turn);
+    sendTurn();
+  } else
+    server.send(
+      Buffer.from(Commands.YOURTURN),
+      players[turn].port,
+      players[turn].address,
+      err => {}
+    );
+}
+
+function displayBoard() {
+  let yrows = '\x1b[47m\x1b[30m  ';
+  for (let i = 0; i < game.map_.length; i++) yrows += i + ' ';
+  yrows += '\x1b[0m';
+  console.log(yrows);
+
+  for (let y = 0; y < game.map_.length; y++) {
+    let row = '';
+    for (let x = 0; x < game.map_.length; x++) {
+      if (x == 0) row += '\x1b[47m\x1b[30m' + y + ' \x1b[0m';
+      if (game.map_[y][x].playerName == null) {
+        row += '\x1b[37m' + game.map_[y][x].points;
+      } else if (
+        players[0] != undefined &&
+        game.map_[y][x].playerName == players[0].name
+      ) {
+        row += '\x1b[32m' + game.map_[y][x].points;
+      } else if (
+        players[1] != undefined &&
+        game.map_[y][x].playerName == players[1].name
+      ) {
+        row += '\x1b[33m' + game.map_[y][x].points;
+      } else if (
+        players[2] != undefined &&
+        game.map_[y][x].playerName == players[2].name
+      ) {
+        row += '\x1b[34m' + game.map_[y][x].points;
+      } else if (
+        players[3] != undefined &&
+        game.map_[y][x].playerName == players[3].name
+      ) {
+        row += '\x1b[35m' + game.map_[y][x].points;
+      }
+      row += ' \x1b[0m';
+    }
+    console.log(row);
+  }
+  console.log();
 }

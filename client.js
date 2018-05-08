@@ -33,7 +33,6 @@ const main = async () => {
     'localhost',
     err => {}
   );
-
 };
 
 //setup player and send message
@@ -48,7 +47,6 @@ client.on('message', (msg, rinfo) => {
     case Commands.START:
       game = new Game(parseInt(command[1]));
 
-
       //get player names
       for (let x = 2; x < command.length; x++) {
         players.push(command[x]);
@@ -61,9 +59,20 @@ client.on('message', (msg, rinfo) => {
     case Commands.YOURTURN:
       makeMove();
       break;
-      // if anyone (and you) made move
+    // if anyone (and you) made move
     case Commands.MOVE:
       turnResolve(command[1], command[2], command[3]);
+      break;
+    case Commands.LOSE:
+      console.log(Commands.LOSE);
+      break;
+    case Commands.WIN:
+      console.log(Commands.WIN);
+      break;
+    case Commands.DISCONNECTED:
+      console.log(Commands.DISCONNECTED);
+      client.close();
+      process.exit();
       break;
   }
 });
@@ -71,12 +80,21 @@ client.on('message', (msg, rinfo) => {
 // or Class return moves by ai
 function AiMove() {
   //starting input for player 2
-  let x = 7,
+  let x = 4,
     y = 0;
-  return {
-    x,
-    y
-  };
+  let possiblemoves = [];
+  for (let y = 0; y < game.map_.length; y++) {
+    for (let x = 0; x < game.map_.length; x++) {
+      if (game.map_[y][x].playerName == PlayerName) {
+        possiblemoves.push({
+          x,
+          y
+        });
+      }
+    }
+  }
+
+  return possiblemoves[Math.floor(Math.random() * (possiblemoves.length - 1))];
 }
 
 async function makeMove() {
@@ -114,7 +132,9 @@ function turnResolve(name, x, y) {
   // add move to board
   game.add(name, parseInt(x), parseInt(y));
   //show board
-  console.log(game.toBoard());
+  if (PlayerName != name) console.log('got Move:', name, x, y);
+  else console.log('your Move:', name, x, y);
+  displayBoard();
 }
 
 function question(question) {
@@ -123,4 +143,27 @@ function question(question) {
       resolve(answer);
     });
   });
+}
+function displayBoard() {
+  let yrows = '\x1b[47m\x1b[30m  ';
+  for (let i = 0; i < game.map_.length; i++) yrows += i + ' ';
+  yrows += '\x1b[0m';
+  console.log(yrows);
+
+  for (let y = 0; y < game.map_.length; y++) {
+    let row = '';
+    for (let x = 0; x < game.map_.length; x++) {
+      if (x == 0) row += '\x1b[47m\x1b[30m' + y + ' \x1b[0m';
+      if (game.map_[y][x].playerName == null) {
+        row += '\x1b[37m' + game.map_[y][x].points;
+      } else if (game.map_[y][x].playerName == PlayerName) {
+        row += '\x1b[32m' + game.map_[y][x].points;
+      } else if (game.map_[y][x].playerName != null) {
+        row += '\x1b[31m' + game.map_[y][x].points;
+      }
+      row += ' \x1b[0m';
+    }
+    console.log(row);
+  }
+  console.log();
 }
