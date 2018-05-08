@@ -3,10 +3,10 @@ class Game {
     this.size = size;
     let x = -1;
     let y = -1;
-    this.map_ = new Array(size).fill('0').map(v => {
+    this.map_ = new Array(size).fill("0").map(v => {
       y++;
 
-      let mapX = new Array(size).fill('0').map(v => {
+      let mapX = new Array(size).fill("0").map(v => {
         x++;
         return {
           playerName: null,
@@ -93,7 +93,9 @@ class Game {
   }
 
   canMove(playerName, x, y) {
-    return this.map_[y][x].playerName === playerName;
+    if (x < map_.length && y < map_.length)
+      return this.map_[y][x].playerName === playerName;
+    else return false;
   }
 
   //return mat2 of only points
